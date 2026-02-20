@@ -19,13 +19,15 @@ body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#F1F5F9;col
 .btn-all{background:#E0E7FF;color:#3730A3}
 .btn-view{padding:8px 16px;font-size:12px;border-radius:8px}
 .btn-view.active{background:#1E3A5F;color:#fff}
+.btn-export{background:#059669;color:#fff;padding:6px 14px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:600;margin-left:auto;display:inline-flex;align-items:center;gap:4px}
+.btn-export:hover{background:#047857}
 .kpis{display:flex;gap:12px;padding:0 16px;margin:12px 0;flex-wrap:wrap}
 .kpi{background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07);min-width:140;border-left:4px solid #3B82F6}
 .kpi .label{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:1px}
 .kpi .value{font-size:26px;font-weight:700;color:#1E3A5F}
 .kpi .sub{font-size:11px;color:#9CA3AF}
 .panel{background:#fff;border-radius:12px;padding:20px;margin:0 16px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.panel h2{font-size:16px;font-weight:700;color:#1E3A5F;margin-bottom:12px}
+.panel h2{font-size:16px;font-weight:700;color:#1E3A5F;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 table{width:100%;border-collapse:collapse;font-size:11px}
 thead tr{background:#1E3A5F}
 th{color:#fff;padding:6px 8px;text-align:left;position:sticky;top:0;z-index:1}
@@ -57,19 +59,25 @@ tr:nth-child(even){background:#F9FAFB}
 .type-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
 .scroll-table{max-height:500px;overflow-y:auto}
 .chantier-detail{background:#F8FAFC;border:2px solid #8B5CF6;border-radius:12px;padding:20px;margin:0 16px 16px;animation:fadeIn .2s}
+.projet-detail{background:#F8FAFC;border:2px solid #F59E0B;border-radius:12px;padding:20px;margin:0 16px 16px;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.chantier-detail h3{font-size:15px;font-weight:700;color:#1E3A5F;margin-bottom:4px}
-.chantier-detail .subtitle{font-size:12px;color:#6B7280;margin-bottom:14px}
+.chantier-detail h3,.projet-detail h3{font-size:15px;font-weight:700;color:#1E3A5F;margin-bottom:4px}
+.chantier-detail .subtitle,.projet-detail .subtitle{font-size:12px;color:#6B7280;margin-bottom:14px}
 .chantier-tabs{display:flex;gap:4px;margin-bottom:12px}
 .chantier-tab{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;background:#E5E7EB;color:#6B7280}
 .chantier-tab.active{background:#8B5CF6;color:#fff}
+.projet-tab{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;background:#E5E7EB;color:#6B7280}
+.projet-tab.active{background:#F59E0B;color:#fff}
 .chantier-grid{display:flex;gap:16px;flex-wrap:wrap}
 .chantier-grid>div{flex:1;min-width:280px}
-.chantier-close{background:#EF4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-weight:600;font-size:12px}
+.chantier-close,.projet-close{background:#EF4444;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-weight:600;font-size:12px}
 .chantier-row-highlight{background:#EDE9FE !important}
+.projet-row-highlight{background:#FEF3C7 !important}
 .mini-bar{display:flex;height:20px;border-radius:4px;overflow:hidden;margin-bottom:2px}
 .mini-bar div{height:100%;transition:width .3s}
 .type-filter-icon{font-size:13px;margin-right:2px}
+.export-bar{display:flex;gap:6px;padding:0 16px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.export-bar label{font-weight:700;color:#1E3A5F;font-size:13px}
 </style>
 </head>
 <body>
@@ -85,7 +93,9 @@ tr:nth-child(even){background:#F9FAFB}
 <div class="controls" id="typeCtrl"></div>
 <div class="kpis" id="kpis"></div>
 <div class="controls" id="viewCtrl"></div>
+<div class="export-bar" id="exportBar"></div>
 <div id="detailPanel"></div>
+<div id="projetDetail"></div>
 <div id="chantierDetail"></div>
 <div class="panel" id="mainPanel"></div>
 <div class="footer" id="footer"></div>
@@ -97,8 +107,6 @@ const MN=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov',
 const TC={"Suite Mobilys":"#3B82F6","Novateam":"#10B981","SmartSupply":"#F59E0B","Transformation":"#8B5CF6","Luigi":"#EF4444","System Team":"#EC4899","Pretium":"#06B6D4","Stimuleo":"#F97316","Non assigné":"#9CA3AF"};
 const TO=["Suite Mobilys","Novateam","SmartSupply","Transformation","Luigi","System Team","Pretium","Stimuleo","Non assigné"];
 const TYPC=["#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#F97316"];
-
-// Type filter config
 const TYPE_LIST=["MCO","MEV","PRJ","STR","Absence","STIME -  MANAGEMENT","STIME -  Réunions d'équipe"];
 const TYPE_COLORS={"MCO":"#2563EB","MEV":"#10B981","PRJ":"#F59E0B","STR":"#8B5CF6","Absence":"#9CA3AF","STIME -  MANAGEMENT":"#EC4899","STIME -  Réunions d'équipe":"#F97316"};
 const TYPE_ICONS={"MCO":"🔧","MEV":"🚀","PRJ":"📁","STR":"📐","Absence":"🏖️","STIME -  MANAGEMENT":"👔","STIME -  Réunions d'équipe":"🤝"};
@@ -106,7 +114,7 @@ const TYPE_SHORT={"MCO":"MCO","MEV":"MEV","PRJ":"PRJ","STR":"STR","Absence":"Abs
 
 function getTeam(n,y,m){
   n=n.toLowerCase();
-  const o=y===2025&&m>=10, u=y>=2026;
+  const o=y===2025&&m>=10,u=y>=2026;
   if(n.includes("atman"))return"Suite Mobilys";
   if(y===2025){
     if(o){if(n.includes("kim seng"))return"Transformation";if(n.includes("kamel"))return"Transformation";}
@@ -135,11 +143,9 @@ function getTeam(n,y,m){
 }
 
 const records=RAW.d.map(d=>({res:RAW.r[d[0]],proj:RAW.p[d[1]],lot:RAW.l[d[2]],type:RAW.t[d[3]],jh:d[4],mois:d[5],year:d[6],intext:d[7]?"Externe":"Interne"}));
-
-// Detect which types actually exist in data
 const TYPES_IN_DATA=TYPE_LIST.filter(t=>records.some(r=>r.type===t));
 
-let state={year:2025,months:new Set([1,2,3,4,5,6,7,8,9,10,11,12]),teams:new Set(TO),types:new Set(TYPES_IN_DATA),view:"equipes",detail:null,chantier:null,chantierTab:"equipe"};
+let state={year:2025,months:new Set([1,2,3,4,5,6,7,8,9,10,11,12]),teams:new Set(TO),types:new Set(TYPES_IN_DATA),view:"equipes",detail:null,projet:null,chantier:null,chantierTab:"equipe"};
 let charts={};
 
 function R(v,d=1){return Math.round(v*Math.pow(10,d))/Math.pow(10,d)}
@@ -152,6 +158,132 @@ function getFiltered(){
     .filter(r=>state.teams.has(r.team));
 }
 
+/* ===== CSV EXPORT ===== */
+function csvEscape(v){
+  v=String(v);
+  if(v.includes(',')||v.includes('"')||v.includes('\n')||v.includes(';'))return '"'+v.replace(/"/g,'""')+'"';
+  return v;
+}
+
+function downloadCSV(filename,headers,rows){
+  const BOM='\uFEFF';
+  const csv=BOM+headers.join(';')+'\n'+rows.map(r=>r.map(csvEscape).join(';')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportCurrentView(){
+  const f=getFiltered();
+  const yr=state.year;
+  const typesLabel=[...state.types].join('+');
+
+  if(state.view==="equipes"){
+    const m={};f.forEach(r=>{if(!m[r.team])m[r.team]={jh:0,persons:new Set()};m[r.team].jh+=r.jh;m[r.team].persons.add(r.res);});
+    const rows=TO.filter(t=>m[t]).map(t=>[t,R(m[t].jh),m[t].persons.size,R(m[t].jh/f.reduce((s,r)=>s+r.jh,0)*100)+'%']);
+    downloadCSV('equipes_'+yr+'.csv',['Équipe','JH','Personnes','%'],rows);
+  }
+  else if(state.view==="personnes"){
+    const m={};f.forEach(r=>{if(!m[r.res])m[r.res]={jh:0,team:r.team,projs:new Set()};m[r.res].jh+=r.jh;m[r.res].projs.add(r.proj);});
+    const rows=Object.entries(m).sort((a,b)=>b[1].jh-a[1].jh).map(([n,d])=>[n,d.team,R(d.jh),d.projs.size]);
+    downloadCSV('personnes_'+yr+'.csv',['Ressource','Équipe','JH','Nb Projets'],rows);
+  }
+  else if(state.view==="projets"){
+    const m={};f.forEach(r=>{if(!m[r.proj])m[r.proj]={jh:0,persons:new Set(),teams:new Set()};m[r.proj].jh+=r.jh;m[r.proj].persons.add(r.res);m[r.proj].teams.add(r.team);});
+    const rows=Object.entries(m).sort((a,b)=>b[1].jh-a[1].jh).map(([n,d])=>[n,R(d.jh),d.persons.size,[...d.teams].join(', ')]);
+    downloadCSV('projets_'+yr+'.csv',['Projet','JH','Personnes','Équipes'],rows);
+  }
+  else if(state.view==="types"){
+    const m={};f.forEach(r=>{m[r.type]=(m[r.type]||0)+r.jh;});
+    const tot=f.reduce((s,r)=>s+r.jh,0);
+    const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([n,j])=>[n,R(j),R(j/tot*100)+'%']);
+    downloadCSV('types_'+yr+'.csv',['Type','JH','%'],rows);
+  }
+  else if(state.view==="chantiers"){
+    const m={};f.forEach(r=>{
+      if(!m[r.lot])m[r.lot]={jh:0,proj:r.proj,persons:new Set(),teams:new Set(),type:{}};
+      m[r.lot].jh+=r.jh;m[r.lot].persons.add(r.res);m[r.lot].teams.add(r.team);m[r.lot].type[r.type]=(m[r.lot].type[r.type]||0)+r.jh;
+    });
+    const rows=Object.entries(m).sort((a,b)=>b[1].jh-a[1].jh).map(([n,d])=>{
+      const mainType=Object.entries(d.type).sort((a,b)=>b[1]-a[1])[0];
+      return[n,d.proj,mainType?mainType[0]:'',R(d.jh),d.persons.size,[...d.teams].join(', ')];
+    });
+    downloadCSV('chantiers_'+yr+'.csv',['Chantier','Projet','Type','JH','Personnes','Équipes'],rows);
+  }
+  else if(state.view==="mensuel"){
+    const am=state.year===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12];
+    const months=am.filter(m=>state.months.has(m));
+    const headers=['Équipe',...months.map(m=>MN[m-1]),'Total'];
+    const rows=TO.filter(t=>state.teams.has(t)).map(t=>{
+      const monthVals=months.map(m=>R(f.filter(r=>r.mois===m&&r.team===t).reduce((s,r)=>s+r.jh,0)));
+      return[t,...monthVals,R(monthVals.reduce((s,v)=>s+v,0))];
+    }).filter(r=>r[r.length-1]>0);
+    downloadCSV('mensuel_'+yr+'.csv',headers,rows);
+  }
+}
+
+function exportDetailedData(){
+  const f=getFiltered();
+  const am=state.year===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12];
+  const months=am.filter(m=>state.months.has(m));
+  const headers=['Ressource','Équipe','Projet','Chantier','Type','Interne/Externe',...months.map(m=>MN[m-1]),'Total JH'];
+  // Group by res+proj+lot+type+intext
+  const key=r=>r.res+'|'+r.proj+'|'+r.lot+'|'+r.type+'|'+r.intext;
+  const grp={};
+  f.forEach(r=>{
+    const k=key(r);
+    if(!grp[k])grp[k]={res:r.res,team:r.team,proj:r.proj,lot:r.lot,type:r.type,intext:r.intext,byMonth:{}};
+    grp[k].byMonth[r.mois]=(grp[k].byMonth[r.mois]||0)+r.jh;
+  });
+  const rows=Object.values(grp).sort((a,b)=>a.team.localeCompare(b.team)||a.res.localeCompare(b.res)).map(g=>{
+    const mVals=months.map(m=>g.byMonth[m]?R(g.byMonth[m]):'');
+    const tot=R(months.reduce((s,m)=>s+(g.byMonth[m]||0),0));
+    return[g.res,g.team,g.proj,g.lot,g.type,g.intext,...mVals,tot];
+  });
+  downloadCSV('export_detail_'+state.year+'.csv',headers,rows);
+}
+
+function exportProjetDetail(){
+  if(!state.projet)return;
+  const f=getFiltered().filter(r=>r.proj===state.projet);
+  const rows=[];
+  const byLot={};
+  f.forEach(r=>{
+    if(!byLot[r.lot])byLot[r.lot]={};
+    if(!byLot[r.lot][r.res])byLot[r.lot][r.res]={team:r.team,jh:0};
+    byLot[r.lot][r.res].jh+=r.jh;
+  });
+  Object.entries(byLot).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lot,persons])=>{
+    Object.entries(persons).sort((a,b)=>b[1].jh-a[1].jh).forEach(([name,d])=>{
+      rows.push([state.projet,lot,name,d.team,R(d.jh)]);
+    });
+  });
+  downloadCSV('projet_'+state.projet.substring(0,30).replace(/[^a-zA-Z0-9]/g,'_')+'.csv',['Projet','Chantier','Ressource','Équipe','JH'],rows);
+}
+
+function exportChantierDetail(){
+  if(!state.chantier)return;
+  const f=getFiltered().filter(r=>r.lot===state.chantier);
+  const am=state.year===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12];
+  const months=am.filter(m=>state.months.has(m));
+  const headers=['Ressource','Équipe',...months.map(m=>MN[m-1]),'Total JH'];
+  const byPerson={};
+  f.forEach(r=>{
+    if(!byPerson[r.res])byPerson[r.res]={team:r.team,byMonth:{}};
+    byPerson[r.res].byMonth[r.mois]=(byPerson[r.res].byMonth[r.mois]||0)+r.jh;
+  });
+  const rows=Object.entries(byPerson).sort((a,b)=>a[1].team.localeCompare(b[1].team)).map(([name,d])=>{
+    const mVals=months.map(m=>d.byMonth[m]?R(d.byMonth[m]):'');
+    const tot=R(months.reduce((s,m)=>s+(d.byMonth[m]||0),0));
+    return[name,d.team,...mVals,tot];
+  });
+  downloadCSV('chantier_'+state.chantier.substring(0,30).replace(/[^a-zA-Z0-9]/g,'_')+'.csv',headers,rows);
+}
+
+/* ===== CONTROLS ===== */
 function renderControls(){
   const am=state.year===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12];
   document.getElementById('yearCtrl').innerHTML='<label>Année :</label>'+
@@ -160,24 +292,25 @@ function renderControls(){
     am.map(m=>'<button class="btn '+(state.months.has(m)?'active':'')+'" onclick="toggleMonth('+m+')">'+MN[m-1]+'</button>').join('');
   document.getElementById('teamCtrl').innerHTML='<label>Équipes :</label><button class="btn btn-all" onclick="allTeams()">Toutes</button>'+
     TO.map(t=>'<button class="btn" style="background:'+(state.teams.has(t)?TC[t]:'#fff')+';color:'+(state.teams.has(t)?'#fff':'#6B7280')+';opacity:'+(state.teams.has(t)?1:0.5)+'" onclick="toggleTeam(\''+t+'\')">'+t+'</button>').join('');
-
-  // Type filter
-  const allTypesActive=TYPES_IN_DATA.every(t=>state.types.has(t));
-  const prodTypes=["MCO","MEV","PRJ","STR"];
-  const prodActive=prodTypes.every(t=>state.types.has(t))&&!state.types.has("Absence")&&!state.types.has("STIME -  MANAGEMENT")&&!state.types.has("STIME -  Réunions d'équipe");
   document.getElementById('typeCtrl').innerHTML='<label>Types :</label>'+
     '<button class="btn btn-all" onclick="allTypes()">Tous</button>'+
-    '<button class="btn" style="background:'+(prodActive?'#0F172A':'#fff')+';color:'+(prodActive?'#fff':'#6B7280')+'" onclick="prodTypes()">🎯 Productif</button>'+
+    '<button class="btn" style="background:'+(isProdActive()?'#0F172A':'#fff')+';color:'+(isProdActive()?'#fff':'#6B7280')+'" onclick="prodTypes()">🎯 Productif</button>'+
     TYPES_IN_DATA.map(t=>{
-      const ac=state.types.has(t);
-      const col=TYPE_COLORS[t]||'#6B7280';
+      const ac=state.types.has(t);const col=TYPE_COLORS[t]||'#6B7280';
       return '<button class="btn" style="background:'+(ac?col:'#fff')+';color:'+(ac?'#fff':'#6B7280')+';opacity:'+(ac?1:0.5)+'" onclick="toggleType(\''+t.replace(/'/g,"\\'")+'\')"><span class="type-filter-icon">'+(TYPE_ICONS[t]||'')+'</span>'+(TYPE_SHORT[t]||t)+'</button>';
     }).join('');
-
   const views=[{id:"equipes",l:"Équipes"},{id:"mensuel",l:"Évolution Mensuelle"},{id:"personnes",l:"Personnes"},{id:"projets",l:"Projets"},{id:"types",l:"Types d'activité"},{id:"chantiers",l:"Chantiers"}];
   document.getElementById('viewCtrl').innerHTML=views.map(v=>
     '<button class="btn btn-view '+(state.view===v.id?'active':'')+'" onclick="setView(\''+v.id+'\')">'+v.l+'</button>'
   ).join('');
+  // Export bar
+  document.getElementById('exportBar').innerHTML='<label>📥 Export :</label>'+
+    '<button class="btn-export" onclick="exportCurrentView()">📄 CSV Vue actuelle</button>'+
+    '<button class="btn-export" style="background:#7C3AED" onclick="exportDetailedData()">📊 Export détaillé complet</button>';
+}
+
+function isProdActive(){
+  return ["MCO","MEV","PRJ","STR"].every(t=>state.types.has(t))&&!state.types.has("Absence")&&!state.types.has("STIME -  MANAGEMENT")&&!state.types.has("STIME -  Réunions d'équipe");
 }
 
 function renderKPIs(f){
@@ -185,7 +318,6 @@ function renderKPIs(f){
   const np=new Set(f.map(r=>r.res)).size;
   const npj=new Set(f.map(r=>r.proj)).size;
   const nl=new Set(f.map(r=>r.lot)).size;
-  // Active type summary
   const activeTypes=[...state.types].map(t=>TYPE_SHORT[t]||t);
   const typeSummary=TYPES_IN_DATA.length===state.types.size?'Tous types':activeTypes.join(', ');
   document.getElementById('kpis').innerHTML=
@@ -195,13 +327,13 @@ function renderKPIs(f){
     '<div class="kpi" style="border-left-color:#8B5CF6"><div class="label">Chantiers</div><div class="value">'+nl+'</div></div>';
 }
 
+/* ===== PERSON DETAIL ===== */
 function renderDetail(f){
   if(!state.detail){document.getElementById('detailPanel').innerHTML='';return;}
   const recs=f.filter(r=>r.res===state.detail);
   if(!recs.length){document.getElementById('detailPanel').innerHTML='';return;}
   const am=state.year===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12];
-  const team=recs[0].team;
-  const total=R(recs.reduce((s,r)=>s+r.jh,0));
+  const team=recs[0].team;const total=R(recs.reduce((s,r)=>s+r.jh,0));
   const byMonth={};recs.forEach(r=>{byMonth[r.mois]=(byMonth[r.mois]||0)+r.jh;});
   const byProj={};recs.forEach(r=>{byProj[r.proj]=(byProj[r.proj]||0)+r.jh;});
   const byType={};recs.forEach(r=>{byType[r.type]=(byType[r.type]||0)+r.jh;});
@@ -209,24 +341,92 @@ function renderDetail(f){
   const types=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
   let h='<div class="detail-panel"><div class="detail-header"><div><span style="font-size:18px;font-weight:700;color:#1E3A5F">'+state.detail+'</span> <span class="badge" style="background:'+TC[team]+'">'+team+'</span></div><button class="detail-close" onclick="closeDetail()">✕</button></div>';
   h+='<div style="font-weight:700;color:#1E3A5F;margin-bottom:4px">Total: '+total+' JH</div>';
-  // Type breakdown mini bar
   h+='<div style="margin-bottom:12px"><div class="mini-bar" style="height:14px">';
-  types.forEach(([t,j])=>{
-    const pct=total?j/total*100:0;
-    h+='<div style="width:'+pct+'%;background:'+(TYPE_COLORS[t]||'#9CA3AF')+'" title="'+t+': '+R(j)+' JH ('+R(pct)+'%)"></div>';
-  });
+  types.forEach(([t,j])=>{h+='<div style="width:'+(total?j/total*100:0)+'%;background:'+(TYPE_COLORS[t]||'#9CA3AF')+'" title="'+t+': '+R(j)+' JH"></div>';});
   h+='</div><div style="font-size:10px;color:#6B7280;margin-top:2px">'+types.map(([t,j])=>'<span style="color:'+(TYPE_COLORS[t]||'#9CA3AF')+'">●</span> '+t+': '+R(j)+' JH').join(' · ')+'</div></div>';
   h+='<div class="detail-grid"><div><div style="font-size:12px;font-weight:700;color:#6B7280;margin-bottom:6px">Par mois</div><div class="chart-container"><canvas id="detailChart" height="140"></canvas></div></div>';
   h+='<div><div style="font-size:12px;font-weight:700;color:#6B7280;margin-bottom:6px">Par projet</div>';
-  projs.forEach(([n,j])=>{
-    h+='<div class="proj-row"><div class="proj-name" title="'+n+'">'+n+'</div><div class="proj-bar"><div style="height:100%;background:#3B82F6;border-radius:4px;width:'+Math.min(100,j/total*100)+'%"></div></div><div class="proj-val">'+R(j)+'</div></div>';
-  });
+  projs.forEach(([n,j])=>{h+='<div class="proj-row"><div class="proj-name" title="'+n+'">'+n+'</div><div class="proj-bar"><div style="height:100%;background:#3B82F6;border-radius:4px;width:'+Math.min(100,j/total*100)+'%"></div></div><div class="proj-val">'+R(j)+'</div></div>';});
   h+='</div></div></div>';
   document.getElementById('detailPanel').innerHTML=h;
   const ctx=document.getElementById('detailChart');
   if(ctx){charts.detail=new Chart(ctx,{type:'bar',data:{labels:am.map(m=>MN[m-1]),datasets:[{data:am.map(m=>R(byMonth[m]||0)),backgroundColor:'#3B82F6',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});}
 }
 
+/* ===== PROJET DETAIL ===== */
+function renderProjetDetail(f){
+  const el=document.getElementById('projetDetail');
+  if(!state.projet){el.innerHTML='';return;}
+  const recs=f.filter(r=>r.proj===state.projet);
+  if(!recs.length){el.innerHTML='';state.projet=null;return;}
+  const total=R(recs.reduce((s,r)=>s+r.jh,0));
+  const nbPers=new Set(recs.map(r=>r.res)).size;
+  const nbLots=new Set(recs.map(r=>r.lot)).size;
+  const nbTeams=new Set(recs.map(r=>r.team)).size;
+
+  // By chantier
+  const byLot={};
+  recs.forEach(r=>{
+    if(!byLot[r.lot])byLot[r.lot]={jh:0,persons:new Set(),teams:{},types:{}};
+    byLot[r.lot].jh+=r.jh;byLot[r.lot].persons.add(r.res);
+    byLot[r.lot].teams[r.team]=(byLot[r.lot].teams[r.team]||0)+r.jh;
+    byLot[r.lot].types[r.type]=(byLot[r.lot].types[r.type]||0)+r.jh;
+  });
+  const lotList=Object.entries(byLot).map(([n,d])=>({name:n,jh:R(d.jh),persons:d.persons.size,teams:d.teams,types:d.types})).sort((a,b)=>b.jh-a.jh);
+
+  // By team
+  const byTeam={};
+  recs.forEach(r=>{byTeam[r.team]=(byTeam[r.team]||0)+r.jh;});
+  const teamList=TO.filter(t=>byTeam[t]).map(t=>({team:t,jh:R(byTeam[t])}));
+
+  // By type
+  const byType={};recs.forEach(r=>{byType[r.type]=(byType[r.type]||0)+r.jh;});
+  const typeInfo=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+
+  let h='<div class="projet-detail">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
+  h+='<div><h3>📁 '+state.projet+'</h3>';
+  h+='<div class="subtitle"><strong>'+total+' JH</strong> · '+nbLots+' chantiers · '+nbPers+' personnes · '+nbTeams+' équipes';
+  h+=' <button class="btn-export" style="font-size:10px;padding:3px 8px;margin-left:8px" onclick="exportProjetDetail()">📥 CSV</button></div>';
+  // Type + team mini bars
+  h+='<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:4px">';
+  h+='<div style="flex:1;min-width:150px"><div style="font-size:10px;color:#6B7280">Types</div><div class="mini-bar" style="height:12px">';
+  typeInfo.forEach(([t,j])=>{h+='<div style="width:'+(total?j/total*100:0)+'%;background:'+(TYPE_COLORS[t]||'#9CA3AF')+'" title="'+t+': '+R(j)+' JH"></div>';});
+  h+='</div></div>';
+  h+='<div style="flex:1;min-width:150px"><div style="font-size:10px;color:#6B7280">Équipes</div><div class="mini-bar" style="height:12px">';
+  teamList.forEach(t=>{h+='<div style="width:'+(total?t.jh/total*100:0)+'%;background:'+TC[t.team]+'" title="'+t.team+': '+t.jh+' JH"></div>';});
+  h+='</div></div></div>';
+  h+='</div>';
+  h+='<button class="projet-close" onclick="closeProjet()">✕ Fermer</button></div>';
+
+  // Chantiers table
+  h+='<div style="font-size:13px;font-weight:700;color:#1E3A5F;margin-bottom:8px">Chantiers de ce projet <span style="font-size:11px;font-weight:400;color:#6B7280">(cliquer pour le détail équipe/personne)</span></div>';
+  h+='<div class="chantier-grid"><div><canvas id="projetChart" height="'+Math.max(160,lotList.length*22)+'"></canvas></div>';
+  h+='<div class="scroll-table" style="max-height:400px"><table><thead><tr><th>Chantier</th><th>Type</th><th class="r">JH</th><th class="r">%</th><th class="r">Pers.</th><th>Équipes</th></tr></thead><tbody>';
+  lotList.forEach(l=>{
+    const pct=total?R(l.jh/total*100):0;
+    const mainType=Object.entries(l.types).sort((a,b)=>b[1]-a[1])[0];
+    const typeLabel=mainType?mainType[0]:'';
+    const isActive=state.chantier===l.name;
+    const teamBar=TO.filter(t=>l.teams[t]).map(t=>{
+      const p=l.jh?l.teams[t]/l.jh*100:0;
+      return '<div style="width:'+p+'%;background:'+TC[t]+';height:100%" title="'+t+': '+R(l.teams[t])+' JH"></div>';
+    }).join('');
+    h+='<tr class="clickable'+(isActive?' chantier-row-highlight':'')+'" onclick="showChantierFromProjet(\''+esc(l.name)+'\')"><td class="b" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+l.name+'">'+l.name+'</td><td><span class="badge" style="background:'+(TYPE_COLORS[typeLabel]||'#9CA3AF')+'">'+typeLabel+'</span></td><td class="r b">'+l.jh+'</td><td class="r">'+pct+'%</td><td class="r">'+l.persons+'</td><td style="width:120px"><div class="mini-bar" style="height:14px">'+teamBar+'</div></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  h+='</div>';
+  el.innerHTML=h;
+
+  // Chart
+  const ctx=document.getElementById('projetChart');
+  if(ctx){
+    const top=lotList.slice(0,20);
+    charts.projet=new Chart(ctx,{type:'bar',data:{labels:top.map(l=>l.name.length>30?l.name.substring(0,30)+'…':l.name),datasets:[{data:top.map(l=>l.jh),backgroundColor:top.map(l=>{const mt=Object.entries(l.types).sort((a,b)=>b[1]-a[1])[0];return mt?TYPE_COLORS[mt[0]]||'#9CA3AF':'#9CA3AF';}),borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+' JH'}}},scales:{x:{beginAtZero:true},y:{ticks:{font:{size:9}}}}}});
+  }
+}
+
+/* ===== CHANTIER DETAIL ===== */
 function renderChantierDetail(f){
   const el=document.getElementById('chantierDetail');
   if(!state.chantier){el.innerHTML='';return;}
@@ -254,21 +454,17 @@ function renderChantierDetail(f){
   });
   const personList=Object.entries(byPerson).map(([n,d])=>({name:n,jh:R(d.jh),team:d.team,byMonth:d.byMonth})).sort((a,b)=>b.jh-a.jh);
 
-  // Type breakdown for chantier
   const byType={};recs.forEach(r=>{byType[r.type]=(byType[r.type]||0)+r.jh;});
   const typeInfo=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
 
   let h='<div class="chantier-detail">';
   h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
   h+='<div><h3>🔍 '+state.chantier+'</h3>';
-  h+='<div class="subtitle">Projet : '+proj+' · <strong>'+total+' JH</strong> · '+nbPers+' personnes · '+nbTeams+' équipes</div>';
-  // Type mini bar
+  h+='<div class="subtitle">Projet : '+proj+' · <strong>'+total+' JH</strong> · '+nbPers+' personnes · '+nbTeams+' équipes';
+  h+=' <button class="btn-export" style="font-size:10px;padding:3px 8px;margin-left:8px" onclick="exportChantierDetail()">📥 CSV</button></div>';
   h+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">';
-  typeInfo.forEach(([t,j])=>{
-    h+='<span style="font-size:10px;color:'+(TYPE_COLORS[t]||'#9CA3AF')+'">● '+t+': '+R(j)+' JH</span>';
-  });
-  h+='</div>';
-  h+='</div>';
+  typeInfo.forEach(([t,j])=>{h+='<span style="font-size:10px;color:'+(TYPE_COLORS[t]||'#9CA3AF')+'">● '+t+': '+R(j)+' JH</span>';});
+  h+='</div></div>';
   h+='<button class="chantier-close" onclick="closeChantier()">✕ Fermer</button></div>';
 
   h+='<div class="chantier-tabs">';
@@ -280,26 +476,16 @@ function renderChantierDetail(f){
   if(state.chantierTab==="equipe"){
     h+='<div class="chantier-grid"><div><canvas id="chantierChart" height="200"></canvas></div>';
     h+='<div><table><thead><tr><th>Équipe</th><th class="r">JH</th><th class="r">%</th><th class="r">Pers.</th></tr></thead><tbody>';
-    teamList.forEach(t=>{
-      const pct=total?R(t.jh/total*100):0;
-      h+='<tr><td><span class="badge" style="background:'+TC[t.team]+'">'+t.team+'</span></td><td class="r b">'+t.jh+'</td><td class="r">'+pct+'%</td><td class="r">'+t.persons+'</td></tr>';
-    });
+    teamList.forEach(t=>{h+='<tr><td><span class="badge" style="background:'+TC[t.team]+'">'+t.team+'</span></td><td class="r b">'+t.jh+'</td><td class="r">'+(total?R(t.jh/total*100):0)+'%</td><td class="r">'+t.persons+'</td></tr>';});
     h+='</tbody></table>';
-    h+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:4px">Répartition</div>';
-    h+='<div class="mini-bar">';
-    teamList.forEach(t=>{
-      const pct=total?t.jh/total*100:0;
-      h+='<div style="width:'+pct+'%;background:'+TC[t.team]+'" title="'+t.team+': '+t.jh+' JH"></div>';
-    });
+    h+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:4px">Répartition</div><div class="mini-bar">';
+    teamList.forEach(t=>{h+='<div style="width:'+(total?t.jh/total*100:0)+'%;background:'+TC[t.team]+'" title="'+t.team+': '+t.jh+' JH"></div>';});
     h+='</div></div></div></div>';
   }
   else if(state.chantierTab==="personne"){
     h+='<div class="chantier-grid"><div><canvas id="chantierChart" height="'+Math.max(180,personList.length*20)+'"></canvas></div>';
     h+='<div class="scroll-table" style="max-height:400px"><table><thead><tr><th>Personne</th><th>Équipe</th><th class="r">JH</th><th class="r">%</th></tr></thead><tbody>';
-    personList.forEach(p=>{
-      const pct=total?R(p.jh/total*100):0;
-      h+='<tr class="clickable" onclick="showDetail(\''+esc(p.name)+'\')"><td class="b">'+p.name+'</td><td><span class="badge" style="background:'+(TC[p.team]||'#9CA3AF')+'">'+p.team+'</span></td><td class="r b">'+p.jh+'</td><td class="r">'+pct+'%</td></tr>';
-    });
+    personList.forEach(p=>{h+='<tr class="clickable" onclick="showDetail(\''+esc(p.name)+'\')"><td class="b">'+p.name+'</td><td><span class="badge" style="background:'+(TC[p.team]||'#9CA3AF')+'">'+p.team+'</span></td><td class="r b">'+p.jh+'</td><td class="r">'+(total?R(p.jh/total*100):0)+'%</td></tr>';});
     h+='</tbody></table></div></div>';
   }
   else if(state.chantierTab==="mensuel"){
@@ -313,14 +499,9 @@ function renderChantierDetail(f){
       h+='<td class="r b">'+t.jh+'</td></tr>';
     });
     h+='<tr style="background:#F1F5F9;font-weight:700"><td>Total</td>';
-    am.filter(m=>state.months.has(m)).forEach(m=>{
-      const mTotal=recs.filter(r=>r.mois===m).reduce((s,r)=>s+r.jh,0);
-      h+='<td class="r">'+(mTotal?R(mTotal):'-')+'</td>';
-    });
-    h+='<td class="r">'+total+'</td></tr>';
-    h+='</tbody></table></div>';
+    am.filter(m=>state.months.has(m)).forEach(m=>{const mT=recs.filter(r=>r.mois===m).reduce((s,r)=>s+r.jh,0);h+='<td class="r">'+(mT?R(mT):'-')+'</td>';});
+    h+='<td class="r">'+total+'</td></tr></tbody></table></div>';
   }
-
   h+='</div>';
   el.innerHTML=h;
 
@@ -328,18 +509,17 @@ function renderChantierDetail(f){
   if(!ctx)return;
   if(state.chantierTab==="equipe"){
     charts.chantier=new Chart(ctx,{type:'bar',data:{labels:teamList.map(t=>t.team),datasets:[{data:teamList.map(t=>t.jh),backgroundColor:teamList.map(t=>TC[t.team]),borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+' JH'}}},scales:{y:{beginAtZero:true}}}});
-  }
-  else if(state.chantierTab==="personne"){
+  }else if(state.chantierTab==="personne"){
     const top=personList.slice(0,25);
     charts.chantier=new Chart(ctx,{type:'bar',data:{labels:top.map(p=>p.name),datasets:[{data:top.map(p=>p.jh),backgroundColor:top.map(p=>TC[p.team]||'#9CA3AF'),borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+' JH'}}},scales:{x:{beginAtZero:true},y:{ticks:{font:{size:9}}}}}});
-  }
-  else if(state.chantierTab==="mensuel"){
+  }else if(state.chantierTab==="mensuel"){
     const months=am.filter(m=>state.months.has(m));
     const datasets=teamList.map(t=>({label:t.team,data:months.map(m=>R(t.byMonth[m]||0)),backgroundColor:TC[t.team]}));
     charts.chantier=new Chart(ctx,{type:'bar',data:{labels:months.map(m=>MN[m-1]),datasets},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw+' JH'}}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}});
   }
 }
 
+/* ===== MAIN VIEW ===== */
 function renderMain(f){
   destroyCharts();
   const p=document.getElementById('mainPanel');
@@ -380,12 +560,18 @@ function renderMain(f){
   }
 
   else if(state.view==="projets"){
-    const m={};f.forEach(r=>{if(!m[r.proj])m[r.proj]={jh:0,persons:new Set(),teams:new Set()};m[r.proj].jh+=r.jh;m[r.proj].persons.add(r.res);m[r.proj].teams.add(r.team);});
-    const pd=Object.entries(m).map(([n,d])=>({name:n,jh:R(d.jh),persons:d.persons.size})).sort((a,b)=>b.jh-a.jh);
+    const m={};f.forEach(r=>{if(!m[r.proj])m[r.proj]={jh:0,persons:new Set(),teams:new Set(),lots:new Set(),types:{}};m[r.proj].jh+=r.jh;m[r.proj].persons.add(r.res);m[r.proj].teams.add(r.team);m[r.proj].lots.add(r.lot);m[r.proj].types[r.type]=(m[r.proj].types[r.type]||0)+r.jh;});
+    const pd=Object.entries(m).map(([n,d])=>({name:n,jh:R(d.jh),persons:d.persons.size,lots:d.lots.size,teams:d.teams,types:d.types})).sort((a,b)=>b.jh-a.jh);
     const top10=pd.filter(p=>p.name!=='Absence').slice(0,10);
-    let h='<h2>📁 Projets / Activités</h2><div class="flex-center"><div style="min-width:280px"><canvas id="mainChart" height="250"></canvas></div>';
-    h+='<div style="flex:2;min-width:300px" class="scroll-table"><table><thead><tr><th>Projet</th><th class="r">JH</th><th class="r">Pers.</th></tr></thead><tbody>';
-    pd.forEach(p=>{h+='<tr><td class="b" title="'+p.name+'" style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</td><td class="r b">'+p.jh+'</td><td class="r">'+p.persons+'</td></tr>';});
+    let h='<h2>📁 Projets / Activités <span style="font-size:12px;font-weight:400;color:#6B7280">(cliquer pour voir les chantiers)</span></h2>';
+    h+='<div class="flex-center"><div style="min-width:280px"><canvas id="mainChart" height="250"></canvas></div>';
+    h+='<div style="flex:2;min-width:300px" class="scroll-table"><table><thead><tr><th>Projet</th><th>Type</th><th class="r">JH</th><th class="r">Chantiers</th><th class="r">Pers.</th></tr></thead><tbody>';
+    pd.forEach(pr=>{
+      const mainType=Object.entries(pr.types).sort((a,b)=>b[1]-a[1])[0];
+      const typeLabel=mainType?mainType[0]:'';
+      const isActive=state.projet===pr.name;
+      h+='<tr class="clickable'+(isActive?' projet-row-highlight':'')+'" onclick="showProjet(\''+esc(pr.name)+'\')"><td class="b" title="'+pr.name+'" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+pr.name+'</td><td><span class="badge" style="background:'+(TYPE_COLORS[typeLabel]||'#9CA3AF')+'">'+typeLabel+'</span></td><td class="r b">'+pr.jh+'</td><td class="r">'+pr.lots+'</td><td class="r">'+pr.persons+'</td></tr>';
+    });
     h+='</tbody></table></div></div>';p.innerHTML=h;
     charts.main=new Chart(document.getElementById('mainChart'),{type:'pie',data:{labels:top10.map(p=>p.name.length>20?p.name.substring(0,20)+'…':p.name),datasets:[{data:top10.map(p=>p.jh),backgroundColor:TYPC.concat(TYPC)}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}},tooltip:{callbacks:{label:c=>c.label+': '+c.raw+' JH'}}}}});
   }
@@ -417,15 +603,10 @@ function renderMain(f){
       const isActive=state.chantier===l.name;
       const mainType=Object.entries(l.types).sort((a,b)=>b[1]-a[1])[0];
       const typeLabel=mainType?mainType[0]:'';
-      const typeCol=TYPE_COLORS[typeLabel]||'#9CA3AF';
-      const teamBar=TO.filter(t=>l.teams[t]).map(t=>{
-        const pct=l.jh?l.teams[t]/l.jh*100:0;
-        return '<div style="width:'+pct+'%;background:'+TC[t]+';height:100%" title="'+t+': '+R(l.teams[t])+' JH"></div>';
-      }).join('');
-      h+='<tr class="clickable'+(isActive?' chantier-row-highlight':'')+'" onclick="showChantier(\''+esc(l.name)+'\')"><td class="b" title="'+l.name+'" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.name+'</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#6B7280" title="'+l.proj+'">'+l.proj+'</td><td><span class="badge" style="background:'+typeCol+'">'+typeLabel+'</span></td><td class="r b">'+l.jh+'</td><td class="r">'+l.persons+'</td><td style="width:150px"><div class="mini-bar">'+teamBar+'</div></td></tr>';
+      const teamBar=TO.filter(t=>l.teams[t]).map(t=>{const pct=l.jh?l.teams[t]/l.jh*100:0;return '<div style="width:'+pct+'%;background:'+TC[t]+';height:100%" title="'+t+': '+R(l.teams[t])+' JH"></div>';}).join('');
+      h+='<tr class="clickable'+(isActive?' chantier-row-highlight':'')+'" onclick="showChantier(\''+esc(l.name)+'\')"><td class="b" title="'+l.name+'" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.name+'</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#6B7280" title="'+l.proj+'">'+l.proj+'</td><td><span class="badge" style="background:'+(TYPE_COLORS[typeLabel]||'#9CA3AF')+'">'+typeLabel+'</span></td><td class="r b">'+l.jh+'</td><td class="r">'+l.persons+'</td><td style="width:150px"><div class="mini-bar">'+teamBar+'</div></td></tr>';
     });
-    h+='</tbody></table></div>';
-    p.innerHTML=h;
+    h+='</tbody></table></div>';p.innerHTML=h;
   }
 
   document.getElementById('footer').textContent='Dashboard GESCOM PDV — Données 2025-2026 · '+records.length+' enregistrements · '+RAW.r.length+' ressources';
@@ -436,11 +617,12 @@ function render(){
   const f=getFiltered();
   renderKPIs(f);
   renderDetail(f);
+  renderProjetDetail(f);
   renderChantierDetail(f);
   renderMain(f);
 }
 
-function setYear(y){state.year=y;state.months=new Set(y===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12]);state.detail=null;state.chantier=null;render();}
+function setYear(y){state.year=y;state.months=new Set(y===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12]);state.detail=null;state.projet=null;state.chantier=null;render();}
 function toggleMonth(m){state.months.has(m)?state.months.delete(m):state.months.add(m);render();}
 function allMonths(){state.months=new Set(state.year===2026?[1,2]:[1,2,3,4,5,6,7,8,9,10,11,12]);render();}
 function toggleTeam(t){state.teams.has(t)?state.teams.delete(t):state.teams.add(t);render();}
@@ -448,10 +630,13 @@ function allTeams(){state.teams=new Set(TO);render();}
 function toggleType(t){state.types.has(t)?state.types.delete(t):state.types.add(t);render();}
 function allTypes(){state.types=new Set(TYPES_IN_DATA);render();}
 function prodTypes(){state.types=new Set(["MCO","MEV","PRJ","STR"]);render();}
-function setView(v){state.view=v;state.detail=null;state.chantier=null;render();}
+function setView(v){state.view=v;state.detail=null;state.projet=null;state.chantier=null;render();}
 function showDetail(name){state.detail=name;render();document.getElementById('detailPanel').scrollIntoView({behavior:'smooth'});}
 function closeDetail(){state.detail=null;render();}
+function showProjet(name){state.projet=state.projet===name?null:name;state.chantier=null;render();if(state.projet)document.getElementById('projetDetail').scrollIntoView({behavior:'smooth'});}
+function closeProjet(){state.projet=null;state.chantier=null;render();}
 function showChantier(name){state.chantier=state.chantier===name?null:name;state.chantierTab="equipe";render();if(state.chantier)document.getElementById('chantierDetail').scrollIntoView({behavior:'smooth'});}
+function showChantierFromProjet(name){state.chantier=state.chantier===name?null:name;state.chantierTab="equipe";const f=getFiltered();destroyCharts();renderChantierDetail(f);if(state.chantier)document.getElementById('chantierDetail').scrollIntoView({behavior:'smooth'});}
 function closeChantier(){state.chantier=null;render();}
 function setChantierTab(tab){state.chantierTab=tab;const f=getFiltered();destroyCharts();renderChantierDetail(f);}
 
